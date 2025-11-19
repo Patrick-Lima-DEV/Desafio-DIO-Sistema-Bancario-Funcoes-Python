@@ -1,6 +1,6 @@
-# Sistema Bancário em Python
+# Desafio-DIO-Sistema-Bancario-Funcoes-Python
 
-Projeto desenvolvido como desafio da DIO para praticar estruturas de repetição, condicionais e funções em Python. Ele simula um pequeno sistema bancário via terminal, permitindo depósitos, saques controlados por limite e exibição de extrato organizado.
+Sistema bancário básico em Python com operações de depósito, saque e extrato, refatorado usando funções para modularidade. O projeto foi desenvolvido como desafio da DIO para praticar estruturas de repetição, condicionais e organização em funções.
 
 ## Funcionalidades
 - **Depósito**: valida valores positivos e registra cada movimento no extrato.
