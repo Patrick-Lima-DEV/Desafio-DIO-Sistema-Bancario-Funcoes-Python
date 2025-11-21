@@ -1,42 +1,64 @@
-# Desafio-DIO-Sistema-Bancario-Funcoes-Python
+﻿# Desafio-DIO-Sistema-Bancario-Funcoes-Python
 
-Sistema bancário básico em Python com operações de depósito, saque e extrato, refatorado usando funções para modularidade. O projeto foi desenvolvido como desafio da DIO para praticar estruturas de repetição, condicionais e organização em funções.
+[![GitHub code size](https://img.shields.io/github/languages/code-size/Patrick-Lima-DEV/Desafio-DIO-Sistema-Bancario-Funcoes-Python?style=for-the-badge)](https://github.com/Patrick-Lima-DEV/Desafio-DIO-Sistema-Bancario-Funcoes-Python)
+[![Status](https://img.shields.io/badge/status-completo-success?style=for-the-badge)](https://github.com/Patrick-Lima-DEV/Desafio-DIO-Sistema-Bancario-Funcoes-Python)
+
+> Sistema bancario em Python criado para o desafio da DIO. O script roda no terminal, permite cadastrar usuarios e executar depositos, saques com regras especificas e emitir extratos usando funcoes claras e reutilizaveis.
+
+## Sumario
+1. [Visao geral](#visao-geral)
+2. [Funcionalidades](#funcionalidades)
+3. [Pre-requisitos](#pre-requisitos)
+4. [Execucao](#execucao)
+5. [Menu interativo](#menu-interativo)
+6. [Estrutura do projeto](#estrutura-do-projeto)
+7. [Proximos passos](#proximos-passos)
+8. [Contribuicao](#contribuicao)
+9. [Licenca](#licenca)
+
+## Visao geral
+Este projeto demonstra controle de fluxo e modularizacao em Python, simulando um fluxo basico de conta bancaria, sem dependencias externas ou bancos de dados  todo o estado fica em memoria.
 
 ## Funcionalidades
-- **Criar Usuário**: cadastra novo usuário com nome, CPF, data de nascimento e endereço (CPF único).
-- **Depósito**: valida valores positivos e registra cada movimento no extrato.
-- **Saque**: controla saldo disponível, limite por operação (R$ 500,00) e número máximo de saques diários (3).
-- **Extrato**: lista todas as movimentações realizadas na sessão e mostra o saldo atual formatado.
-- **Encerramento**: permite finalizar a execução de forma segura.
+- Criar usuario: cadastro com nome, CPF (unico na sessao), data de nascimento e endereco completo.
+- Deposito: registra valores positivos no extrato e ajusta o saldo.
+- Saque: aplica validacoes de limite por operacao (R$ 500,00), numero maximo de saques por sessao (3) e saldo disponivel.
+- Extrato: exibe movimentacoes anteriores e o saldo atual formatado como moeda.
+- Encerramento: finaliza o programa exibindo o extrato gerado durante a sessao.
 
-## Requisitos
-- Python 3.12+ (ou qualquer versão 3.8+ que suporte f-strings).
-- Console/terminal habilitado para entrada de dados via `input()`.
+## Pre-requisitos
+- Python 3.12 ou superior (qualquer 3.8+ funciona).
+- Terminal que aceite a funcao `input()` (PowerShell, Prompt, terminal integrado etc.).
 
-## Como Executar
-1. Clone este repositório ou faça o download dos arquivos.
-2. No terminal, navegue até a pasta `desafio_bancario`.
-3. Execute o script:
-
-```powershell
+## Execucao
+```
+git clone https://github.com/Patrick-Lima-DEV/Desafio-DIO-Sistema-Bancario-Funcoes-Python.git
+cd Desafio-DIO-Sistema-Bancario-Funcoes-Python
 python sistema_bancario.py
 ```
 
-Durante a execução, utilize as opções do menu:
-- `u` para criar usuário
-- `d` para depositar
-- `s` para sacar
-- `e` para ver o extrato
-- `q` para sair
+## Menu interativo
+Durante a execucao, responda as opcoes exibidas:
+- `u` criar novo usuario (CPF unico por sessao).
+- `d` depositar valor positivo e registrar o extrato.
+- `s` sacar respeitando saldo, limite de saque e limite diario.
+- `e` exibir o extrato completo e o saldo atual.
+- `q` sair do sistema.
 
-## Estrutura do Código
-- `sistema_bancario.py`: concentra as funções `criar_usuario`, `depositar`, `sacar` e `exibir_extrato`, além do loop principal que interpreta o menu e controla o ciclo de vida da aplicação.
+## Estrutura do projeto
+- `sistema_bancario.py`: concentra as funcoes `criar_usuario`, `depositar`, `sacar` e `exibir_extrato`, alem do loop principal que mantem o menu ativo.
 
-## Possíveis Evoluções
-- Persistir dados em arquivo ou banco de dados.
-- Implementar múltiplas contas e autenticação simples.
-- Criar interface gráfica ou API.
-- Adicionar testes automatizados para cada função.
+## Proximos passos
+- Persistir usuarios e transacoes em arquivo ou banco de dados.
+- Associar movimentacoes a contas especificas (multiusuario).
+- Adicionar testes automatizados para cada funcao do sistema.
+- Criar interface grafica (Tkinter ou Web) ou CLI mais elaborada para melhorar a usabilidade.
 
-## Licença
-Projeto disponível sob a licença MIT. Sinta-se à vontade para usar, estudar e adaptar conforme necessário.
+## Contribuicao
+1. Faca um fork do repositorio.
+2. Crie uma branch com o novo recurso (`git checkout -b feature/nome-da-feature`).
+3. Faca suas alteracoes e adicione testes sempre que necessario.
+4. Abra um pull request descrevendo as mudancas implementadas.
+
+## Licenca
+Este projeto esta licenciado sob a [MIT License](https://opensource.org/licenses/MIT).
