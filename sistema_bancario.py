@@ -4,6 +4,30 @@ limite = 500
 extrato = ""
 numero_saques = 0
 LIMITE_SAQUES = 3
+usuarios = []  # Lista para armazenar usuários
+
+# Função para criar usuário
+def criar_usuario(usuarios):
+    nome = input("Informe o nome completo: ")
+    cpf = input("Informe o CPF (somente números): ")
+    data_nascimento = input("Informe a data de nascimento (dd-mm-aaaa): ")
+    endereco = input("Informe o endereço (logradouro, nro - bairro - cidade/sigla estado): ")
+    
+    # Verificar se CPF já existe
+    for usuario in usuarios:
+        if usuario['cpf'] == cpf:
+            print("CPF já cadastrado! Operação falhou.")
+            return usuarios
+    
+    usuario = {
+        'nome': nome,
+        'cpf': cpf,
+        'data_nascimento': data_nascimento,
+        'endereco': endereco
+    }
+    usuarios.append(usuario)
+    print("Usuário criado com sucesso!")
+    return usuarios
 
 # Função para depósito
 def depositar(saldo, extrato):
@@ -48,6 +72,7 @@ def exibir_extrato(saldo, extrato):
 # Menu
 menu = """
 
+[u] Criar Usuário
 [d] Depositar
 [s] Sacar
 [e] Extrato
@@ -58,7 +83,9 @@ menu = """
 # Loop principal
 while True:
     opcao = input(menu)
-    if opcao == "d":
+    if opcao == "u":
+        usuarios = criar_usuario(usuarios)
+    elif opcao == "d":
         saldo, extrato = depositar(saldo, extrato)
     elif opcao == "s":
         saldo, extrato, numero_saques = sacar(saldo, limite, extrato, numero_saques, LIMITE_SAQUES)
