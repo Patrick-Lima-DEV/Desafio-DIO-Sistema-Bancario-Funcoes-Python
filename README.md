@@ -21,10 +21,15 @@ Este projeto demonstra controle de fluxo e modularizacao em Python, simulando um
 
 ## Funcionalidades
 - Criar usuario: cadastro com nome, CPF (unico na sessao), data de nascimento e endereco completo.
+- Criar conta: vincula um usuario existente a uma conta (agencia fixa "0001", numero sequencial iniciando em 1) antes de operar.
 - Deposito: registra valores positivos no extrato e ajusta o saldo.
 - Saque: aplica validacoes de limite por operacao (R$ 500,00), numero maximo de saques por sessao (3) e saldo disponivel.
 - Extrato: exibe movimentacoes anteriores e o saldo atual formatado como moeda.
 - Encerramento: finaliza o programa exibindo o extrato gerado durante a sessao.
+
+## Contas
+As contas ficam armazenadas em uma lista `contas` e cada registro armazena `agencia` (valor fixo "0001"), `numero_conta` sequencial iniciando em 1, `usuario` (dicionario do titular), `saldo`, `extrato` e contador de saques do dia.
+Um usuario pode ter mais de uma conta, mas cada conta pertence a somente um usuario.
 
 ## Pre-requisitos
 - Python 3.12 ou superior (qualquer 3.8+ funciona).
