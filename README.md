@@ -22,7 +22,7 @@ Este projeto demonstra controle de fluxo e modularizacao em Python, simulando um
 -## Funcionalidades
 - Criar usuario: cadastro com nome, CPF (unico na sessao), data de nascimento e endereco completo.
 - Criar conta: vincula um usuario existente a uma conta (agencia fixa "0001", numero sequencial iniciando em 1) antes de operar.
-- Listar contas: mostra todas as contas ativas com agencia, numero e titular antes das operacoes.
+- Listar contas: mostra todas as contas cadastradas (agencia, conta, titular e saldo atual) para facilitar selecao.
 - Deposito: registra valores positivos no extrato e ajusta o saldo.
 - Saque: aplica validacoes de limite por operacao (R$ 500,00), numero maximo de saques por sessao (3) e saldo disponivel.
 - Extrato: exibe movimentacoes anteriores e o saldo atual formatado como moeda.
@@ -47,11 +47,13 @@ python sistema_bancario.py
 Durante a execucao, responda as opcoes exibidas:
 - `u` criar novo usuario (CPF unico por sessao).
 - `c` criar conta para um usuario existente.
-- `l` listar todas as contas cadastradas (agencia, conta, titular).
+- `l` listar todas as contas cadastradas (agencia, conta, titular e saldo atual).
 - `d` depositar valor positivo e registrar o extrato.
 - `s` sacar respeitando saldo, limite de saque e limite diario.
 - `e` exibir o extrato completo e o saldo atual.
 - `q` sair do sistema.
+
+Ao selecionar uma conta para operar (opcoes `d`, `s` ou `e`), o programa pergunta se deseja filtrar contas por CPF; ao aceitar, apenas as contas daquele titular sao exibidas antes de solicitar o numero da conta.
 
 ## Estrutura do projeto
 - `sistema_bancario.py`: concentra as funcoes `criar_usuario`, `depositar`, `sacar` e `exibir_extrato`, alem do loop principal que mantem o menu ativo.

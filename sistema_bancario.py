@@ -60,10 +60,39 @@ def criar_conta(agencia, numero_conta, usuarios, contas):
     return numero_conta + 1
 
 
+def listar_contas(contas, titulo="Contas cadastradas"):
+    if not contas:
+        print("Nenhuma conta cadastrada.")
+        return
+
+    print(f"\n==== {titulo} ====")
+    for conta in contas:
+        titular = conta["usuario"]["nome"]
+        saldo_str = f"Saldo: R$ {conta['saldo']:.2f}"
+        print(
+            f"Agência: {conta['agencia']} | Conta: {conta['numero_conta']} | Titular: {titular} | {saldo_str}"
+        )
+    print("========================\n")
+
+
 def selecionar_conta(contas):
     if not contas:
         print("Nenhuma conta cadastrada.")
         return None
+
+    filtrar = input("Deseja filtrar contas por CPF antes de selecionar? (s/n): ").strip().lower()
+    contas_disponiveis = contas
+
+    if filtrar == "s":
+        cpf = input("Informe o CPF para filtrar: ")
+        contas_filtradas = [conta for conta in contas if conta["usuario"]["cpf"] == cpf]
+        if not contas_filtradas:
+            print("Nenhuma conta encontrada para o CPF informado.")
+            return None
+        contas_disponiveis = contas_filtradas
+        listar_contas(contas_disponiveis, titulo="Contas filtradas")
+    else:
+        listar_contas(contas)
 
     try:
         numero = int(input("Informe o número da conta: "))
@@ -71,7 +100,7 @@ def selecionar_conta(contas):
         print("Número de conta inválido.")
         return None
 
-    for conta in contas:
+    for conta in contas_disponiveis:
         if conta["numero_conta"] == numero:
             return conta
 
