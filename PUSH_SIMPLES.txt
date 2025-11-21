@@ -1,0 +1,137 @@
+================================================================================
+                    FAZER PUSH NO GIT - INSTRUÇÕES SIMPLES
+================================================================================
+
+IMPORTANTE: Escolha UMA das opções abaixo
+
+================================================================================
+OPÇÃO 1: AUTOMÁTICO (Recomendado para Windows)
+================================================================================
+
+Passo 1: Abra o explorador de arquivos
+         Navegue até: c:\Users\usuar\Área de Trabalho\DIO\desafio_bancario
+
+Passo 2: Localize o arquivo "push_to_git.bat"
+
+Passo 3: Duplo clique no arquivo
+
+Passo 4: Uma janela do terminal abrirá e fará:
+         ✓ Verificar status
+         ✓ Adicionar arquivos
+         ✓ Fazer commit
+         ✓ Fazer push
+         ✓ Mostrar resultado
+
+Pronto! O código está no git.
+
+================================================================================
+OPÇÃO 2: MANUAL (Para qualquer SO - Windows/Mac/Linux)
+================================================================================
+
+Passo 1: Abra terminal/PowerShell/Command Prompt
+
+Passo 2: Vá para a pasta do projeto
+         cd c:\Users\usuar\Área de Trabalho\DIO\desafio_bancario
+
+Passo 3: Verifique o status
+         git status
+
+Passo 4: Configure seu nome e email (primeira vez apenas):
+         git config user.name "Seu Nome Completo"
+         git config user.email "seu.email@gmail.com"
+
+Passo 5: Adicione os arquivos
+         git add -A
+
+Passo 6: Faça o commit
+         git commit -m "v2.1: Melhorias de UX com loops de validação"
+
+Passo 7: Faça o push
+         git push
+
+Passo 8: Verifique o resultado
+         git log --oneline -5
+
+================================================================================
+VERIFICAR SE DEU CERTO
+================================================================================
+
+Após fazer o push, acesse:
+
+1. Seu GitHub/GitLab no navegador
+2. Vá para o repositório do desafio_bancario
+3. Verifique se aparecem os novos commits
+4. Verifique se aparecem os novos arquivos:
+   ✓ test_sistema_bancario.py
+   ✓ CHANGELOG.md
+   ✓ MELHORIAS_APLICADAS.txt
+   ✓ UX_LOOPS_VALIDACAO.md
+   ✓ E outros arquivos
+
+================================================================================
+POSSÍVEIS PROBLEMAS
+================================================================================
+
+PROBLEMA: "git não é reconhecido"
+SOLUÇÃO: Instale Git for Windows (git-scm.com)
+
+PROBLEMA: "fatal: 'origin' does not appear to be a 'git' repository"
+SOLUÇÃO: Você não configurou o repositório remoto.
+         Adicione com: git remote add origin https://seu-repo-url.git
+
+PROBLEMA: "Permission denied"
+SOLUÇÃO: Configure credenciais no GitHub/GitLab
+         ou use chave SSH
+
+PROBLEMA: "nothing to commit"
+SOLUÇÃO: Não há mudanças desde o último commit. Normal!
+
+================================================================================
+COMANDOS ÚTEIS APÓS PUSH
+================================================================================
+
+Ver últimos commits:
+  git log --oneline -10
+
+Ver status atual:
+  git status
+
+Ver diferenças:
+  git diff
+
+Ver repositório remoto:
+  git remote -v
+
+Ver branches:
+  git branch -a
+
+================================================================================
+DÚVIDAS COMUNS
+================================================================================
+
+P: Preciso fazer algo antes de push?
+R: Não, o script (opção 1) ou os comandos (opção 2) fazem tudo automaticamente.
+
+P: Vai perder algum arquivo?
+R: Não! O "git add -A" adiciona TODOS os arquivos novos e modificados.
+
+P: Posso fazer push várias vezes?
+R: Sim! A cada vez que fizer mudanças, pode fazer novo commit e push.
+
+P: Preciso apagar algum arquivo?
+R: Não necessário. A pasta __pycache__ é ignorada automaticamente.
+
+P: Quanto tempo demora?
+R: Alguns segundos, depende da conexão de internet.
+
+================================================================================
+SUCESSO!
+================================================================================
+
+Se você vir no terminal:
+  "main [novo commit hash] Seu Commit"
+  "master [novo commit hash] Seu Commit"
+
+E no GitHub aparecerem os arquivos - deu certo! 🎉
+
+================================================================================

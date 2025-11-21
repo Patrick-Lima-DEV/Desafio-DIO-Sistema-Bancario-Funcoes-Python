@@ -17,24 +17,28 @@
 9. [Licenca](#licenca)
 
 ## Visao geral
-Este projeto demonstra controle de fluxo e modularizacao em Python, simulando um fluxo basico de conta bancaria, sem dependencias externas ou bancos de dados  todo o estado fica em memoria.
+Este projeto demonstra controle de fluxo, modularizacao e persistencia em Python, simulando um fluxo basico de conta bancaria com dados salvos em arquivo JSON entre sessoes.
 
--## Funcionalidades
-- Criar usuario: cadastro com nome, CPF (unico na sessao), data de nascimento e endereco completo.
+## Funcionalidades
+- Criar usuario: cadastro com nome, CPF validado por algoritmo verificador (unico na sessao), data de nascimento (formato dd-mm-aaaa) e endereco completo.
 - Criar conta: vincula um usuario existente a uma conta (agencia fixa "0001", numero sequencial iniciando em 1) antes de operar.
 - Listar contas: mostra todas as contas cadastradas (agencia, conta, titular e saldo atual) para facilitar selecao.
-- Deposito: registra valores positivos no extrato e ajusta o saldo.
-- Saque: aplica validacoes de limite por operacao (R$ 500,00), numero maximo de saques por sessao (3) e saldo disponivel.
-- Extrato: exibe movimentacoes anteriores e o saldo atual formatado como moeda.
-- Encerramento: finaliza o programa exibindo o extrato gerado durante a sessao.
+- Deposito: registra valores positivos no extrato com timestamp e ajusta o saldo.
+- Saque: aplica validacoes de limite por operacao (R$ 500,00), numero maximo de saques por sessao (3) e saldo disponivel. Registra timestamp.
+- Transferencia: permite transferir valores entre contas com validacoes de saldo e contas diferentes. Registra timestamp em ambas.
+- Extrato: exibe movimentacoes anteriores com timestamp e o saldo atual formatado como moeda.
+- Persistencia: usuarios e contas sao salvos automaticamente em arquivo JSON (dados_bancarios.json) e carregados na proxima sessao.
+- Testes: suite completa com pytest para validar funcoes principais.
+- Entrada robusta: quando uma validacao falha (CPF, data, valor), o programa pede a entrada do campo especifico novamente, sem perder os dados anteriores.
 
 ## Contas
 As contas ficam armazenadas em uma lista `contas` e cada registro armazena `agencia` (valor fixo "0001"), `numero_conta` sequencial iniciando em 1, `usuario` (dicionario do titular), `saldo`, `extrato` e contador de saques do dia.
 Um usuario pode ter mais de uma conta, mas cada conta pertence a somente um usuario.
 
 ## Pre-requisitos
-- Python 3.12 ou superior (qualquer 3.8+ funciona).
+- Python 3.8 ou superior.
 - Terminal que aceite a funcao `input()` (PowerShell, Prompt, terminal integrado etc.).
+- pytest (opcional, para rodar testes).
 
 ## Execucao
 ```
@@ -45,23 +49,30 @@ python sistema_bancario.py
 
 ## Menu interativo
 Durante a execucao, responda as opcoes exibidas:
-- `u` criar novo usuario (CPF unico por sessao).
+- `u` criar novo usuario (CPF validado por algoritmo verificador, unico por sessao).
 - `c` criar conta para um usuario existente.
 - `l` listar todas as contas cadastradas (agencia, conta, titular e saldo atual).
-- `d` depositar valor positivo e registrar o extrato.
-- `s` sacar respeitando saldo, limite de saque e limite diario.
-- `e` exibir o extrato completo e o saldo atual.
+- `d` depositar valor positivo e registrar no extrato com timestamp.
+- `s` sacar respeitando saldo, limite de saque e limite diario. Registra com timestamp.
+- `t` transferir entre contas com timestamp em ambas.
+- `e` exibir o extrato completo com timestamp de cada operacao e o saldo atual.
 - `q` sair do sistema.
 
-Ao selecionar uma conta para operar (opcoes `d`, `s` ou `e`), o programa pergunta se deseja filtrar contas por CPF; ao aceitar, apenas as contas daquele titular sao exibidas antes de solicitar o numero da conta.
+Ao selecionar uma conta para operar (opcoes `d`, `s`, `t` ou `e`), o programa pergunta se deseja filtrar contas por CPF; ao aceitar, apenas as contas daquele titular sao exibidas antes de solicitar o numero da conta.
 
 ## Estrutura do projeto
-- `sistema_bancario.py`: concentra as funcoes `criar_usuario`, `depositar`, `sacar` e `exibir_extrato`, alem do loop principal que mantem o menu ativo.
+- `sistema_bancario.py`: concentra as funcoes principais e loop do menu ativo. Salva/carrega dados automaticamente em `dados_bancarios.json`.
+- `test_sistema_bancario.py`: testes unitarios com pytest para validar validacoes, operacoes de usuario/conta e transferencias.
+- `dados_bancarios.json`: arquivo gerado automaticamente com persistencia de dados entre sessoes.
+
+## Testes
+```
+pytest test_sistema_bancario.py -v
+```
 
 ## Proximos passos
-- Persistir usuarios e transacoes em arquivo ou banco de dados.
 - Associar movimentacoes a contas especificas (multiusuario).
-- Adicionar testes automatizados para cada funcao do sistema.
+- Adicionar autenticacao com senha/PIN.
 - Criar interface grafica (Tkinter ou Web) ou CLI mais elaborada para melhorar a usabilidade.
 
 ## Contribuicao
