@@ -168,17 +168,6 @@ menu = """
 
 => """
 
-def listar_contas(contas):
-    if not contas:
-        print("Nenhuma conta cadastrada.")
-        return
-
-    print("\n==== Contas Criadas ====")
-    for conta in contas:
-        titular = conta["usuario"]["nome"]
-        print(f"Agência: {conta['agencia']} | Conta: {conta['numero_conta']} | Titular: {titular}")
-    print("========================\n")
-
 while True:
     opcao = input(menu)
 
