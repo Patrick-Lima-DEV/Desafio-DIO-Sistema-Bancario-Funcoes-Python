@@ -27,7 +27,7 @@ Este projeto demonstra controle de fluxo, modularizacao e persistencia em Python
 - **Criar conta**: vincula um usuario existente a uma conta (agencia fixa "0001", numero sequencial iniciando em 1) antes de operar.
 - **Listar contas**: mostra todas as contas cadastradas (agencia, conta, titular e saldo atual) para facilitar selecao.
 - **Deposito**: registra valores positivos no extrato com timestamp e ajusta o saldo.
-- **Saque**: aplica validacoes de limite por operacao (R$ 500,00), numero maximo de saques por sessao (3) e saldo disponivel. Registra timestamp. Em caso de saldo insuficiente, oferece opcao de deposito imediato.
+- **Saque**: aplica validacoes de limite por operacao (R$ 500,00), numero maximo de saques por **dia** (3) com **reset automático diário**, e saldo disponivel. Registra timestamp. Em caso de saldo insuficiente, oferece opcao de deposito imediato.
 - **Transferencia**: permite transferir valores entre contas com validacoes de saldo e contas diferentes. Registra timestamp em ambas.
 - **Extrato**: exibe movimentacoes anteriores com timestamp e o saldo atual formatado como moeda.
 
@@ -41,7 +41,7 @@ Este projeto demonstra controle de fluxo, modularizacao e persistencia em Python
 - **Interface Grafica (GUI)**: aplicacao Tkinter com menu intuitivo, janelas dedicadas para cada operacao, layout responsivo em 2 colunas e design moderno com cores e feedback visual.
 
 ## Contas
-As contas ficam armazenadas em uma lista `contas` e cada registro armazena `agencia` (valor fixo "0001"), `numero_conta` sequencial iniciando em 1, `usuario` (dicionario do titular), `saldo`, `extrato` e contador de saques do dia.
+As contas ficam armazenadas em uma lista `contas` e cada registro armazena `agencia` (valor fixo "0001"), `numero_conta` sequencial iniciando em 1, `usuario` (dicionario do titular), `saldo`, `extrato`, contador de saques do dia (com **reset automático diário**) e data do último reset.
 Um usuario pode ter mais de uma conta, mas cada conta pertence a somente um usuario.
 
 ## Pre-requisitos

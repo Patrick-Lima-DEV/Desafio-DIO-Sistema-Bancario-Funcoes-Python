@@ -150,6 +150,19 @@ def depositar(numero_conta, valor):
     return False, "Conta não encontrada."
 
 
+def verificar_reset_saques_diarios(conta):
+    """Verifica se deve resetar o contador de saques diários baseado na data."""
+    hoje = datetime.now().date().isoformat()
+    ultimo_reset = conta.get("ultimo_reset_saques", "")
+    
+    if ultimo_reset != hoje:
+        conta["saques_realizados"] = 0
+        conta["ultimo_reset_saques"] = hoje
+        salvar_dados()
+        return True  # Foi resetado
+    return False  # Não foi resetado
+
+
 def sacar(numero_conta, valor):
     """Realiza saque de uma conta."""
     if valor <= 0:
@@ -157,6 +170,9 @@ def sacar(numero_conta, valor):
     
     for conta in contas:
         if conta["numero_conta"] == numero_conta:
+            # Verificar se deve resetar saques diários
+            resetado = verificar_reset_saques_diarios(conta)
+            
             if valor > conta["saldo"]:
                 return False, "Saldo insuficiente."
             

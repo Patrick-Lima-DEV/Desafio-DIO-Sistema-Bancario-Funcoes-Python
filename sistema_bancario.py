@@ -1,6 +1,8 @@
 import json
 import re
+import unicodedata
 from datetime import datetime
+from functools import wraps
 from pathlib import Path
 
 AGENCIA_PADRAO = "0001"
@@ -11,6 +13,97 @@ ARQUIVO_DADOS = Path("dados_bancarios.json")
 usuarios = []
 contas = []
 proximo_numero_conta = 1
+
+
+def normalizar_texto(texto):
+    """Remove acentos e coloca texto em minúsculas para comparações."""
+    if not texto:
+        return ""
+    return unicodedata.normalize("NFKD", texto).encode("ASCII", "ignore").decode("ASCII").lower()
+
+
+def log_transacao(tipo_transacao):
+    """Decorador que registra a data/hora e o tipo da transação."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            info = ""
+            for arg in args:
+                if isinstance(arg, dict) and arg.get("numero_conta"):
+                    info = f" agência {arg.get('agencia')} conta {arg.get('numero_conta')}"
+                    break
+                if isinstance(arg, (int, str)):
+                    info = f" id={arg}"
+            print(f"[{now}] Transação iniciada: {tipo_transacao}{info}")
+            result = func(*args, **kwargs)
+            later = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            print(f"[{later}] Transação finalizada: {tipo_transacao}{info}")
+            return result
+        return wrapper
+    return decorator
+
+
+def gerar_transacoes(conta, tipo=None):
+    """Gerador que percorre o extrato e opcionalmente filtra por tipo."""
+    extrato = conta.get("extrato", "")
+    if not extrato:
+        return
+    for linha in extrato.strip().splitlines():
+        if not linha.strip():
+            continue
+        match = re.match(r"^\[(?P<timestamp>[^\]]+)\]\s*(?P<tipo>[^:]+):\s*(?P<rest>.+)$", linha)
+        timestamp = match.group("timestamp") if match else None
+        tipo_tx = match.group("tipo").strip() if match else "Transação"
+        descricao = match.group("rest") if match else linha
+        valor = None
+        valor_match = re.search(r"R\$\s*([\d.,]+)", descricao)
+        if valor_match:
+            valor_texto = valor_match.group(1)
+            if "." in valor_texto and "," in valor_texto:
+                valor_texto = valor_texto.replace(".", "").replace(",", ".")
+            else:
+                valor_texto = valor_texto.replace(",", ".")
+            try:
+                valor = float(valor_texto)
+            except ValueError:
+                valor = None
+        transacao = {
+            "timestamp": timestamp,
+            "tipo": tipo_tx,
+            "valor": valor,
+            "descricao": descricao.strip(),
+        }
+        tipo_normalizado = normalizar_texto(tipo_tx)
+        filtro_normalizado = normalizar_texto(tipo) if tipo else None
+        if filtro_normalizado is None or tipo_normalizado.startswith(filtro_normalizado):
+            yield transacao
+
+
+class ContaIterador:
+    """Iterador personalizado para percorrer as contas cadastradas."""
+    def __init__(self, lista_contas):
+        self._contas = list(lista_contas)
+        self._indice = 0
+
+    def __iter__(self):
+        self._indice = 0
+        return self
+
+    def __next__(self):
+        if self._indice >= len(self._contas):
+            raise StopIteration
+        conta = self._contas[self._indice]
+        self._indice += 1
+        usuario = conta.get("usuario", {})
+        return {
+            "numero_conta": conta.get("numero_conta"),
+            "agencia": conta.get("agencia"),
+            "titular": usuario.get("nome"),
+            "cpf": usuario.get("cpf"),
+            "saldo": conta.get("saldo", 0.0),
+            "data_criacao": conta.get("data_criacao"),
+        }
 
 
 def validar_cpf(cpf):
@@ -114,6 +207,7 @@ def criar_usuario(usuarios):
     return usuario
 
 
+@log_transacao("Criação de Conta")
 def criar_conta(agencia, numero_conta, usuarios, contas):
     if not usuarios:
         print("Cadastre um usuário antes de criar uma conta.")
@@ -147,11 +241,10 @@ def listar_contas(contas, titulo="Contas cadastradas"):
         return
 
     print(f"\n==== {titulo} ====")
-    for conta in contas:
-        titular = conta["usuario"]["nome"]
-        saldo_str = f"Saldo: R$ {conta['saldo']:.2f}"
+    for info in ContaIterador(contas):
+        saldo_str = f"Saldo: R$ {info['saldo']:.2f}"
         print(
-            f"Agência: {conta['agencia']} | Conta: {conta['numero_conta']} | Titular: {titular} | {saldo_str}"
+            f"Agência: {info['agencia']} | Conta: {info['numero_conta']} | Titular: {info['titular']} | {saldo_str}"
         )
     print("========================\n")
 
@@ -189,6 +282,7 @@ def selecionar_conta(contas):
         print("Conta não encontrada. Tente novamente.")
 
 
+@log_transacao("Depósito")
 def depositar(conta):
     while True:
         try:
@@ -209,7 +303,26 @@ def depositar(conta):
         break
 
 
+def verificar_reset_saques_diarios(conta):
+    """Verifica se deve resetar o contador de saques diários baseado na data."""
+    hoje = datetime.now().date().isoformat()
+    ultimo_reset = conta.get("ultimo_reset_saques", "")
+    
+    if ultimo_reset != hoje:
+        conta["saques_realizados"] = 0
+        conta["ultimo_reset_saques"] = hoje
+        salvar_dados()
+        return True  # Foi resetado
+    return False  # Não foi resetado
+
+
+@log_transacao("Saque")
 def sacar(conta):
+    # Verificar se deve resetar saques diários
+    resetado = verificar_reset_saques_diarios(conta)
+    if resetado:
+        print("Contador de saques diários foi resetado para um novo dia!")
+    
     while True:
         try:
             valor = float(input("Informe o valor do saque: "))
@@ -240,6 +353,7 @@ def sacar(conta):
             break
 
 
+@log_transacao("Transferência")
 def transferir(contas):
     """Realiza transferência entre contas."""
     conta_origem = selecionar_conta(contas)
@@ -284,7 +398,19 @@ def transferir(contas):
 
 def exibir_extrato(conta):
     print("\n================ EXTRATO ================")
-    print("Não foram realizadas movimentações." if not conta["extrato"] else conta["extrato"])
+    filtro = input("Deseja filtrar por tipo (depósito/saque/transferência)? Deixe vazio para todas: ").strip()
+    filtro_normalizado = normalizar_texto(filtro) if filtro else None
+    transacoes = list(gerar_transacoes(conta, filtro_normalizado))
+    if not transacoes:
+        print("Não foram realizadas movimentações." if not conta["extrato"] else "Nenhuma transação corresponde ao filtro.")
+    else:
+        for tx in transacoes:
+            timestamp = tx.get("timestamp") or "----"
+            tipo_tx = tx.get("tipo")
+            valor = tx.get("valor")
+            descricao = tx.get("descricao")
+            valor_str = f"R$ {valor:.2f}" if isinstance(valor, (int, float)) else ""
+            print(f"[{timestamp}] {tipo_tx}: {valor_str} {descricao}")
     print(f"\nSaldo: R$ {conta['saldo']:.2f}")
     print("==========================================")
 
