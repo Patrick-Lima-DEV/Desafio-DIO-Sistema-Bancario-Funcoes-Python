@@ -429,32 +429,40 @@ menu = """
 
 => """
 
-carregar_dados()
 
-while True:
-    opcao = input(menu)
+def main():
+    """Loop interativo principal do CLI. Mantido sob guard para permitir import em testes."""
+    carregar_dados()
 
-    if opcao == "u":
-        criar_usuario(usuarios)
-    elif opcao == "c":
-        proximo_numero_conta = criar_conta(AGENCIA_PADRAO, proximo_numero_conta, usuarios, contas)
-    elif opcao == "d":
-        conta = selecionar_conta(contas)
-        if conta:
-            depositar(conta)
-    elif opcao == "s":
-        conta = selecionar_conta(contas)
-        if conta:
-            sacar(conta)
-    elif opcao == "t":
-        transferir(contas)
-    elif opcao == "e":
-        conta = selecionar_conta(contas)
-        if conta:
-            exibir_extrato(conta)
-    elif opcao == "l":
-        listar_contas(contas)
-    elif opcao == "q":
-        break
-    else:
-        print("Operação inválida, por favor selecione novamente a operação desejada.")
+    while True:
+        opcao = input(menu)
+
+        if opcao == "u":
+            criar_usuario(usuarios)
+        elif opcao == "c":
+            global proximo_numero_conta
+            proximo_numero_conta = criar_conta(AGENCIA_PADRAO, proximo_numero_conta, usuarios, contas)
+        elif opcao == "d":
+            conta = selecionar_conta(contas)
+            if conta:
+                depositar(conta)
+        elif opcao == "s":
+            conta = selecionar_conta(contas)
+            if conta:
+                sacar(conta)
+        elif opcao == "t":
+            transferir(contas)
+        elif opcao == "e":
+            conta = selecionar_conta(contas)
+            if conta:
+                exibir_extrato(conta)
+        elif opcao == "l":
+            listar_contas(contas)
+        elif opcao == "q":
+            break
+        else:
+            print("Operação inválida, por favor selecione novamente a operação desejada.")
+
+
+if __name__ == "__main__":
+    main()
