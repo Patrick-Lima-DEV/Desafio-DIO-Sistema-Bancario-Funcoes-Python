@@ -229,7 +229,8 @@ class BancoGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Sistema Bancário - Interface Gráfica")
-        self.root.geometry("600x500")
+        self.root.geometry("800x600")
+        self.root.minsize(600, 500)
         self.root.configure(bg="#f0f0f0")
         
         carregar_dados()
@@ -269,10 +270,18 @@ class BancoGUI:
             ("❌ Sair", self.root.quit),
         ]
         
-        for texto, comando in botoes:
+        for i, (texto, comando) in enumerate(botoes):
             btn = tk.Button(frame_botoes, text=texto, command=comando, font=("Arial", 12), 
                            bg="#3498db", fg="white", height=2, relief=tk.RAISED, cursor="hand2")
-            btn.pack(fill=tk.X, pady=8)
+            
+            # Organizar em 2 colunas
+            frame_botoes.columnconfigure(0, weight=1)
+            frame_botoes.columnconfigure(1, weight=1)
+            
+            row = i // 2
+            col = i % 2
+            btn.grid(row=row, column=col, sticky="ew", padx=10, pady=10)
+            
             btn.bind("<Enter>", lambda e: e.widget.config(bg="#2980b9"))
             btn.bind("<Leave>", lambda e: e.widget.config(bg="#3498db"))
     
@@ -382,32 +391,34 @@ class BancoGUI:
             frame_tabela = tk.Frame(self.root, bg="#f0f0f0")
             frame_tabela.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
             
-            # Header
-            header_frame = tk.Frame(frame_tabela, bg="#34495e")
-            header_frame.pack(fill=tk.X)
+            # Treeview com Scrollbar
+            columns = ("agencia", "numero", "titular", "saldo")
+            tree = ttk.Treeview(frame_tabela, columns=columns, show="headings")
             
-            headers = ["Agência", "Conta", "Titular", "Saldo"]
-            for header in headers:
-                label = tk.Label(header_frame, text=header, font=("Arial", 10, "bold"), 
-                               bg="#34495e", fg="white", width=15, anchor="w")
-                label.pack(side=tk.LEFT, padx=5, pady=5)
+            tree.heading("agencia", text="Agência")
+            tree.heading("numero", text="Conta")
+            tree.heading("titular", text="Titular")
+            tree.heading("saldo", text="Saldo")
+            
+            tree.column("agencia", width=100, anchor="center")
+            tree.column("numero", width=100, anchor="center")
+            tree.column("titular", width=300, anchor="w")
+            tree.column("saldo", width=150, anchor="e")
+            
+            scrollbar = ttk.Scrollbar(frame_tabela, orient=tk.VERTICAL, command=tree.yview)
+            tree.configure(yscroll=scrollbar.set)
+            
+            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
             
             # Contas
             for conta in contas:
-                row_frame = tk.Frame(frame_tabela, bg="#ecf0f1")
-                row_frame.pack(fill=tk.X, pady=2)
-                
-                dados = [
+                tree.insert("", tk.END, values=(
                     conta["agencia"],
                     str(conta["numero_conta"]),
                     conta["usuario"]["nome"],
                     f"R$ {conta['saldo']:.2f}"
-                ]
-                
-                for dado in dados:
-                    label = tk.Label(row_frame, text=dado, font=("Arial", 9), 
-                                   bg="#ecf0f1", width=15, anchor="w")
-                    label.pack(side=tk.LEFT, padx=5, pady=3)
+                ))
         
         btn_voltar = tk.Button(self.root, text="Voltar", command=self.voltar_menu, 
                               font=("Arial", 11), bg="#95a5a6", fg="white", padx=20)
