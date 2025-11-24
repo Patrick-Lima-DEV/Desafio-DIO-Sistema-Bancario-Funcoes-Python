@@ -1,0 +1,32 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+
+# pytest cache
+.pytest_cache/
+
+# Editor files
+.vscode/
+*.swp
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Local data
+dados_bancarios.json
+
+# Temporary test helpers
+teste_*.py
+teste_*.json
+
+# Logs
+*.log
+
+# Build / distribution
+dist/
+build/
+
+# Virtual environments
+venv/
+.env/
