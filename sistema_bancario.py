@@ -66,6 +66,8 @@ def gerar_transacoes(conta, tipo=None):
                 valor_texto = valor_texto.replace(",", ".")
             try:
                 valor = float(valor_texto)
+                # Remove o valor da descrição para evitar duplicação
+                descricao = re.sub(r"R\$\s*[\d.,]+", "", descricao).strip()
             except ValueError:
                 valor = None
         transacao = {
