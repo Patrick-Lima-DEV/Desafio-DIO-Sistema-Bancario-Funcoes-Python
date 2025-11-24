@@ -21,17 +21,24 @@
 Este projeto demonstra controle de fluxo, modularizacao e persistencia em Python, simulando um fluxo basico de conta bancaria com dados salvos em arquivo JSON entre sessoes.
 
 ## Funcionalidades
-- Criar usuario: cadastro com nome, CPF validado por algoritmo verificador (unico na sessao), data de nascimento (formato dd-mm-aaaa) e endereco completo.
-- Criar conta: vincula um usuario existente a uma conta (agencia fixa "0001", numero sequencial iniciando em 1) antes de operar.
-- Listar contas: mostra todas as contas cadastradas (agencia, conta, titular e saldo atual) para facilitar selecao.
-- Deposito: registra valores positivos no extrato com timestamp e ajusta o saldo.
-- Saque: aplica validacoes de limite por operacao (R$ 500,00), numero maximo de saques por sessao (3) e saldo disponivel. Registra timestamp.
-- Transferencia: permite transferir valores entre contas com validacoes de saldo e contas diferentes. Registra timestamp em ambas.
-- Extrato: exibe movimentacoes anteriores com timestamp e o saldo atual formatado como moeda.
-- Persistencia: usuarios e contas sao salvos automaticamente em arquivo JSON (dados_bancarios.json) e carregados na proxima sessao.
-- Testes: suite completa com pytest para validar funcoes principais.
-- Entrada robusta: quando uma validacao falha (CPF, data, valor), o programa pede a entrada do campo especifico novamente, sem perder os dados anteriores.
-- Interface Grafica (GUI): opcao de usar a aplicacao via interface Tkinter com menu intuitivo, janelas dedicadas para cada operacao e design moderno com cores e feedback visual.
+
+### Operações Principais
+- **Criar usuario**: cadastro com nome, CPF validado por algoritmo verificador (unico na sessao), data de nascimento (formato dd-mm-aaaa) e endereco completo.
+- **Criar conta**: vincula um usuario existente a uma conta (agencia fixa "0001", numero sequencial iniciando em 1) antes de operar.
+- **Listar contas**: mostra todas as contas cadastradas (agencia, conta, titular e saldo atual) para facilitar selecao.
+- **Deposito**: registra valores positivos no extrato com timestamp e ajusta o saldo.
+- **Saque**: aplica validacoes de limite por operacao (R$ 500,00), numero maximo de saques por sessao (3) e saldo disponivel. Registra timestamp. Em caso de saldo insuficiente, oferece opcao de deposito imediato.
+- **Transferencia**: permite transferir valores entre contas com validacoes de saldo e contas diferentes. Registra timestamp em ambas.
+- **Extrato**: exibe movimentacoes anteriores com timestamp e o saldo atual formatado como moeda.
+
+### Recursos Avançados
+- **Decoradores**: log automatico de transacoes com timestamp de inicio e fim
+- **Geradores**: iteracao eficiente sobre transacoes do extrato com filtro por tipo
+- **Iteradores personalizados**: classe ContaIterador para percorrer contas cadastradas
+- **Persistencia**: usuarios e contas sao salvos automaticamente em arquivo JSON (dados_bancarios.json) e carregados na proxima sessao.
+- **Testes**: suite completa com pytest para validar funcoes principais.
+- **Entrada robusta**: quando uma validacao falha (CPF, data, valor), o programa pede a entrada do campo especifico novamente, sem perder os dados anteriores.
+- **Interface Grafica (GUI)**: aplicacao Tkinter com menu intuitivo, janelas dedicadas para cada operacao, layout responsivo em 2 colunas e design moderno com cores e feedback visual.
 
 ## Contas
 As contas ficam armazenadas em uma lista `contas` e cada registro armazena `agencia` (valor fixo "0001"), `numero_conta` sequencial iniciando em 1, `usuario` (dicionario do titular), `saldo`, `extrato` e contador de saques do dia.
