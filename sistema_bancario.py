@@ -68,14 +68,17 @@ def criar_conta_cli():
     print("Conta criada com sucesso! Número da conta:", proximo_numero_conta - 1)
 
 
-def listar_contas(titulo="Contas cadastradas"):
-    """Lista todas as contas cadastradas."""
-    if not contas:
+def listar_contas(titulo="Contas cadastradas", lista_contas=None):
+    """Lista contas cadastradas."""
+    if lista_contas is None:
+        lista_contas = contas
+    
+    if not lista_contas:
         print("Nenhuma conta cadastrada.")
         return
 
     print(f"\n==== {titulo} ====")
-    for info in ContaIterador(contas):
+    for info in ContaIterador(lista_contas):
         saldo_str = f"Saldo: R$ {info['saldo']:.2f}"
         print(
             f"Agência: {info['agencia']} | Conta: {info['numero_conta']} | Titular: {info['titular']} | {saldo_str}"
@@ -99,7 +102,7 @@ def selecionar_conta():
             print("Nenhuma conta encontrada para o CPF informado.")
             return None
         contas_disponiveis = contas_filtradas
-        listar_contas(titulo="Contas filtradas")
+        listar_contas(titulo="Contas filtradas", lista_contas=contas_filtradas)
     else:
         listar_contas()
 
