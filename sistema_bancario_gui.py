@@ -21,6 +21,9 @@ from models import (
     verificar_reset_saques_diarios,
     ContaIterador,
     gerar_transacoes,
+    depositar_obj,
+    sacar_obj,
+    transferir_obj,
 )
 
 # Variáveis globais (carregadas na inicialização)
@@ -91,16 +94,10 @@ def criar_conta(cpf):
 def depositar(numero_conta, valor):
     """Wrapper para depósito."""
     try:
-        if valor <= 0:
-            return False, "Valor deve ser maior que zero."
-        
         for conta in contas:
             if conta["numero_conta"] == numero_conta:
-                timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                conta["saldo"] += valor
-                conta["extrato"] += f"[{timestamp}] Depósito: R$ {valor:.2f}\n"
-                salvar_dados(usuarios, contas, proximo_numero_conta)
-                return True, f"Depósito de R$ {valor:.2f} realizado com sucesso!"
+                mensagem = depositar_obj(conta, valor, usuarios, contas)
+                return True, mensagem
         
         return False, "Conta não encontrada."
     except Exception as e:
@@ -110,29 +107,10 @@ def depositar(numero_conta, valor):
 def sacar(numero_conta, valor):
     """Wrapper para saque."""
     try:
-        if valor <= 0:
-            return False, "Valor deve ser maior que zero."
-        
         for conta in contas:
             if conta["numero_conta"] == numero_conta:
-                # Verificar se deve resetar saques diários
-                verificar_reset_saques_diarios(conta)
-                
-                if valor > conta["saldo"]:
-                    return False, "Saldo insuficiente."
-                
-                if valor > LIMITE_SAQUE:
-                    return False, f"Limite de saque é R$ {LIMITE_SAQUE:.2f}"
-                
-                if conta["saques_realizados"] >= LIMITE_SAQUES_DIARIOS:
-                    return False, "Limite de saques diários atingido."
-                
-                timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                conta["saldo"] -= valor
-                conta["extrato"] += f"[{timestamp}] Saque: R$ {valor:.2f}\n"
-                conta["saques_realizados"] += 1
-                salvar_dados(usuarios, contas, proximo_numero_conta)
-                return True, f"Saque de R$ {valor:.2f} realizado com sucesso!"
+                mensagem = sacar_obj(conta, valor, usuarios, contas)
+                return True, mensagem
         
         return False, "Conta não encontrada."
     except Exception as e:
@@ -142,39 +120,8 @@ def sacar(numero_conta, valor):
 def transferir(numero_origem, numero_destino, valor):
     """Wrapper para transferência."""
     try:
-        if valor <= 0:
-            return False, "Valor deve ser maior que zero."
-        
-        if numero_origem == numero_destino:
-            return False, "Não é possível transferir para a mesma conta."
-        
-        conta_origem = None
-        conta_destino = None
-        
-        for conta in contas:
-            if conta["numero_conta"] == numero_origem:
-                conta_origem = conta
-            if conta["numero_conta"] == numero_destino:
-                conta_destino = conta
-        
-        if not conta_origem:
-            return False, "Conta de origem não encontrada."
-        
-        if not conta_destino:
-            return False, "Conta de destino não encontrada."
-        
-        if valor > conta_origem["saldo"]:
-            return False, "Saldo insuficiente."
-        
-        timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        conta_origem["saldo"] -= valor
-        conta_origem["extrato"] += f"[{timestamp}] Transferência enviada: R$ {valor:.2f} para Agência {conta_destino['agencia']} Conta {conta_destino['numero_conta']}\n"
-        
-        conta_destino["saldo"] += valor
-        conta_destino["extrato"] += f"[{timestamp}] Transferência recebida: R$ {valor:.2f} de Agência {conta_origem['agencia']} Conta {conta_origem['numero_conta']}\n"
-        
-        salvar_dados(usuarios, contas, proximo_numero_conta)
-        return True, "Transferência realizada com sucesso!"
+        mensagem = transferir_obj(numero_origem, numero_destino, valor, usuarios, contas)
+        return True, mensagem
     except Exception as e:
         return False, str(e)
 
