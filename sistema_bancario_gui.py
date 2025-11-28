@@ -10,6 +10,7 @@ from utils import (
     filtrar_usuario_por_cpf,
     carregar_dados,
     registrar_consulta_extrato,
+    salvar_dados,
     AGENCIA_PADRAO,
     ARQUIVO_DADOS,
     ARQUIVO_LOG,
@@ -17,20 +18,15 @@ from utils import (
     LIMITE_SAQUES_DIARIOS,
 )
 from models import (
-    usuarios,
-    contas,
-    proximo_numero_conta,
-    salvar_dados,
-    criar_usuario_dados,
-    criar_conta_dados,
-    obter_conta_por_numero,
-    depositar_dados,
-    sacar_dados,
-    transferir_dados,
     verificar_reset_saques_diarios,
     ContaIterador,
     gerar_transacoes,
 )
+
+# Variáveis globais (carregadas na inicialização)
+usuarios = []
+contas = []
+proximo_numero_conta = 1
 
 
 
