@@ -107,7 +107,8 @@ def mascarar_dados_sensiveis(valor):
     valor_str = str(valor)
     
     # Mascarar CPF (padrão: 123.456.789-00 ou 12345678900)
-    valor_str = re.sub(r'\b(\d{3})\.?(\d{3})\.?(\d{3})\-?(\d{2})\b', r'\1.***.***.***-**', valor_str)
+    # Formato: XXX.***.***.***-** (mostra apenas primeiros 3 dígitos)
+    valor_str = re.sub(r'\b(\d{3})\.?(\d{3})\.?(\d{3})\-?(\d{2})\b', r'\1.***.***-**', valor_str)
     
     # Mascarar valores monetários grandes (provavelmente saldos/valores)
     # Substitui números com 4+ dígitos por ****
@@ -120,7 +121,7 @@ def mascarar_dados_sensiveis(valor):
     return valor_str
 
 
-def registrar_log(tipo_transacao, nome_funcao, status, duracao, args, kwargs, resultado=None, erro=None):
+def registrar_log(tipo_transacao, nome_funcao, status, duracao, args, kwargs, resultado=None, erro=None, titular=None):
     """Registra operação em log.txt com formato padronizado e dados mascarados."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
     
@@ -128,7 +129,11 @@ def registrar_log(tipo_transacao, nome_funcao, status, duracao, args, kwargs, re
     args_mascarados = []
     for arg in args:
         if isinstance(arg, dict) and arg.get("numero_conta"):
-            args_mascarados.append(f"conta_numero={arg.get('numero_conta')}")
+            # Extrair informações da conta para log
+            numero_conta = arg.get('numero_conta')
+            usuario_info = arg.get('usuario', {})
+            nome_usuario = usuario_info.get('nome', 'Desconhecido')
+            args_mascarados.append(f"conta={numero_conta} titular={nome_usuario}")
         elif isinstance(arg, (int, str, float)) and len(str(arg)) < 50:
             args_mascarados.append(mascarar_dados_sensiveis(arg))
         elif isinstance(arg, list):
@@ -141,8 +146,11 @@ def registrar_log(tipo_transacao, nome_funcao, status, duracao, args, kwargs, re
     # Preparar resultado
     resultado_str = mascarar_dados_sensiveis(resultado) if resultado else "None"
     
+    # Adicionar titular se fornecido
+    titular_str = f" | titular={titular}" if titular else ""
+    
     # Montar linha de log
-    linha_log = f"[{timestamp}] {nome_funcao:20} | {tipo_transacao:25} | ARGS: {args_str:40} | {status:6} | {duracao:.3f}s"
+    linha_log = f"[{timestamp}] {nome_funcao:20} | {tipo_transacao:25} | ARGS: {args_str:40} | {status:6} | {duracao:.3f}s{titular_str}"
     
     if erro:
         linha_log += f" | ERRO: {erro}"
@@ -189,3 +197,15 @@ def log_transacao(tipo_transacao):
                 raise
         return wrapper
     return decorator
+
+
+def registrar_consulta_extrato(numero_conta, titular):
+    """Registra consulta de extrato de uma conta."""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    linha_log = f"[{timestamp}] consulta_extrato      | Consulta de Extrato      | conta={numero_conta} titular={titular} | OK     | 0.000s"
+    
+    try:
+        with open(ARQUIVO_LOG, "a", encoding="utf-8") as f:
+            f.write(linha_log + "\n")
+    except Exception as e:
+        print(f"[AVISO] Não foi possível registrar log: {e}")

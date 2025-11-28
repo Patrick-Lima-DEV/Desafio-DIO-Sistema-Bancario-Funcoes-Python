@@ -4,7 +4,7 @@
 
 from utils import (
     validar_cpf, validar_data, filtrar_usuario_por_cpf, 
-    carregar_dados, salvar_dados, normalizar_texto,
+    carregar_dados, salvar_dados, normalizar_texto, registrar_consulta_extrato,
     AGENCIA_PADRAO
 )
 from models import (
@@ -184,6 +184,11 @@ def exibir_extrato():
     conta = selecionar_conta()
     if not conta:
         return
+    
+    # Registrar consulta de extrato no log
+    numero_conta = conta.get("numero_conta")
+    titular = conta.get("usuario", {}).get("nome", "Desconhecido")
+    registrar_consulta_extrato(numero_conta, titular)
     
     print("\n================ EXTRATO ================")
     filtro = input("Deseja filtrar por tipo (depósito/saque/transferência)? Deixe vazio para todas: ").strip()

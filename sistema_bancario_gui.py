@@ -9,6 +9,7 @@ from utils import (
     validar_data,
     filtrar_usuario_por_cpf,
     carregar_dados,
+    registrar_consulta_extrato,
     AGENCIA_PADRAO,
     ARQUIVO_DADOS,
     ARQUIVO_LOG,
@@ -566,6 +567,13 @@ class BancoGUI:
             if extrato is None:
                 messagebox.showerror("Erro", "Conta não encontrada!")
             else:
+                # Registrar consulta de extrato no log
+                for conta in contas:
+                    if conta.get("numero_conta") == numero_conta:
+                        titular = conta.get("usuario", {}).get("nome", "Desconhecido")
+                        registrar_consulta_extrato(numero_conta, titular)
+                        break
+                
                 texto = f"================ EXTRATO ================\n"
                 texto += f"{extrato}\n"
                 texto += f"Saldo: R$ {saldo:.2f}\n"
