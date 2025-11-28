@@ -1,236 +1,189 @@
 import tkinter as tk
 from tkinter import messagebox, ttk, scrolledtext
-import json
-import re
 from datetime import datetime
 from pathlib import Path
 
-# Configurações
-AGENCIA_PADRAO = "0001"
-LIMITE_SAQUE = 500
-LIMITE_SAQUES_DIARIOS = 3
-ARQUIVO_DADOS = Path("dados_bancarios.json")
-
-usuarios = []
-contas = []
-proximo_numero_conta = 1
-
-
-def validar_cpf(cpf):
-    """Valida CPF com algoritmo verificador."""
-    if not re.match(r"^\d{11}$", cpf):
-        return False
-    
-    if cpf == cpf[0] * 11:
-        return False
-    
-    soma = sum(int(cpf[i]) * (10 - i) for i in range(9))
-    digito1 = 11 - (soma % 11)
-    digito1 = 0 if digito1 > 9 else digito1
-    
-    soma = sum(int(cpf[i]) * (11 - i) for i in range(10))
-    digito2 = 11 - (soma % 11)
-    digito2 = 0 if digito2 > 9 else digito2
-    
-    return int(cpf[9]) == digito1 and int(cpf[10]) == digito2
-
-
-def validar_data(data_str):
-    """Valida data no formato dd-mm-aaaa."""
-    try:
-        datetime.strptime(data_str, "%d-%m-%Y")
-        return True
-    except ValueError:
-        return False
+# Importar do novo layout modular
+from utils import (
+    validar_cpf,
+    validar_data,
+    filtrar_usuario_por_cpf,
+    carregar_dados,
+    AGENCIA_PADRAO,
+    ARQUIVO_DADOS,
+    ARQUIVO_LOG,
+    LIMITE_SAQUE,
+    LIMITE_SAQUES_DIARIOS,
+)
+from models import (
+    usuarios,
+    contas,
+    proximo_numero_conta,
+    salvar_dados,
+    criar_usuario_dados,
+    criar_conta_dados,
+    obter_conta_por_numero,
+    depositar_dados,
+    sacar_dados,
+    transferir_dados,
+    verificar_reset_saques_diarios,
+    ContaIterador,
+    gerar_transacoes,
+)
 
 
-def salvar_dados():
-    """Salva usuários e contas em arquivo JSON."""
-    dados = {
-        "usuarios": usuarios,
-        "contas": contas,
-        "proximo_numero_conta": proximo_numero_conta
-    }
-    with open(ARQUIVO_DADOS, "w", encoding="utf-8") as f:
-        json.dump(dados, f, ensure_ascii=False, indent=2)
 
 
-def carregar_dados():
-    """Carrega usuários e contas do arquivo JSON."""
-    global usuarios, contas, proximo_numero_conta
-    
-    if ARQUIVO_DADOS.exists():
-        try:
-            with open(ARQUIVO_DADOS, "r", encoding="utf-8") as f:
-                dados = json.load(f)
-                usuarios = dados.get("usuarios", [])
-                contas = dados.get("contas", [])
-                proximo_numero_conta = dados.get("proximo_numero_conta", 1)
-        except (json.JSONDecodeError, KeyError):
-            pass
-
-
-def filtrar_usuario_por_cpf(usuarios, cpf):
-    for usuario in usuarios:
-        if usuario["cpf"] == cpf:
-            return usuario
-    return None
-
+# ============= FUNÇÕES WRAPPER PARA A INTERFACE =============
 
 def criar_usuario(nome, cpf, data_nascimento, endereco):
-    """Cria um novo usuário."""
-    if not validar_cpf(cpf):
-        return False, "CPF inválido!"
-    
-    if filtrar_usuario_por_cpf(usuarios, cpf):
-        return False, "CPF já cadastrado!"
-    
-    if not validar_data(data_nascimento):
-        return False, "Data inválida! Use formato dd-mm-aaaa"
-    
-    usuario = {
-        "nome": nome,
-        "cpf": cpf,
-        "data_nascimento": data_nascimento,
-        "endereco": endereco,
-        "data_criacao": datetime.now().isoformat(),
-    }
-    usuarios.append(usuario)
-    salvar_dados()
-    return True, "Usuário criado com sucesso!"
+    """Wrapper para criar novo usuário."""
+    try:
+        if not validar_cpf(cpf):
+            return False, "CPF inválido!"
+        
+        if filtrar_usuario_por_cpf(usuarios, cpf):
+            return False, "CPF já cadastrado!"
+        
+        if not validar_data(data_nascimento):
+            return False, "Data inválida! Use formato dd-mm-aaaa"
+        
+        usuario = {
+            "nome": nome,
+            "cpf": cpf,
+            "data_nascimento": data_nascimento,
+            "endereco": endereco,
+            "data_criacao": datetime.now().isoformat(),
+        }
+        usuarios.append(usuario)
+        salvar_dados()
+        return True, "Usuário criado com sucesso!"
+    except Exception as e:
+        return False, str(e)
 
 
 def criar_conta(cpf):
-    """Cria uma nova conta bancária."""
+    """Wrapper para criar nova conta."""
     global proximo_numero_conta
-    
-    if not usuarios:
-        return False, "Cadastre um usuário antes de criar uma conta."
-    
-    usuario = filtrar_usuario_por_cpf(usuarios, cpf)
-    if not usuario:
-        return False, "Usuário não encontrado."
-    
-    conta = {
-        "agencia": AGENCIA_PADRAO,
-        "numero_conta": proximo_numero_conta,
-        "usuario": usuario,
-        "saldo": 0,
-        "extrato": "",
-        "saques_realizados": 0,
-        "data_criacao": datetime.now().isoformat(),
-    }
-    contas.append(conta)
-    numero_criado = proximo_numero_conta
-    proximo_numero_conta += 1
-    salvar_dados()
-    return True, f"Conta criada com sucesso! Número: {numero_criado}"
-
-
-def listar_contas_dados(filtro_cpf=None):
-    """Retorna lista de contas."""
-    if filtro_cpf:
-        return [conta for conta in contas if conta["usuario"]["cpf"] == filtro_cpf]
-    return contas
+    try:
+        if not usuarios:
+            return False, "Cadastre um usuário antes de criar uma conta."
+        
+        usuario = filtrar_usuario_por_cpf(usuarios, cpf)
+        if not usuario:
+            return False, "Usuário não encontrado."
+        
+        conta = {
+            "agencia": AGENCIA_PADRAO,
+            "numero_conta": proximo_numero_conta,
+            "usuario": usuario,
+            "saldo": 0,
+            "extrato": "",
+            "saques_realizados": 0,
+            "data_criacao": datetime.now().isoformat(),
+        }
+        contas.append(conta)
+        numero_criado = proximo_numero_conta
+        proximo_numero_conta += 1
+        salvar_dados()
+        return True, f"Conta criada com sucesso! Número: {numero_criado}"
+    except Exception as e:
+        return False, str(e)
 
 
 def depositar(numero_conta, valor):
-    """Realiza depósito em uma conta."""
-    if valor <= 0:
-        return False, "Valor deve ser maior que zero."
-    
-    for conta in contas:
-        if conta["numero_conta"] == numero_conta:
-            timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-            conta["saldo"] += valor
-            conta["extrato"] += f"[{timestamp}] Depósito: R$ {valor:.2f}\n"
-            salvar_dados()
-            return True, f"Depósito de R$ {valor:.2f} realizado com sucesso!"
-    
-    return False, "Conta não encontrada."
-
-
-def verificar_reset_saques_diarios(conta):
-    """Verifica se deve resetar o contador de saques diários baseado na data."""
-    hoje = datetime.now().date().isoformat()
-    ultimo_reset = conta.get("ultimo_reset_saques", "")
-    
-    if ultimo_reset != hoje:
-        conta["saques_realizados"] = 0
-        conta["ultimo_reset_saques"] = hoje
-        salvar_dados()
-        return True  # Foi resetado
-    return False  # Não foi resetado
+    """Wrapper para depósito."""
+    try:
+        if valor <= 0:
+            return False, "Valor deve ser maior que zero."
+        
+        for conta in contas:
+            if conta["numero_conta"] == numero_conta:
+                timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                conta["saldo"] += valor
+                conta["extrato"] += f"[{timestamp}] Depósito: R$ {valor:.2f}\n"
+                salvar_dados()
+                return True, f"Depósito de R$ {valor:.2f} realizado com sucesso!"
+        
+        return False, "Conta não encontrada."
+    except Exception as e:
+        return False, str(e)
 
 
 def sacar(numero_conta, valor):
-    """Realiza saque de uma conta."""
-    if valor <= 0:
-        return False, "Valor deve ser maior que zero."
-    
-    for conta in contas:
-        if conta["numero_conta"] == numero_conta:
-            # Verificar se deve resetar saques diários
-            resetado = verificar_reset_saques_diarios(conta)
-            
-            if valor > conta["saldo"]:
-                return False, "Saldo insuficiente."
-            
-            if valor > LIMITE_SAQUE:
-                return False, f"Limite de saque é R$ {LIMITE_SAQUE:.2f}"
-            
-            if conta["saques_realizados"] >= LIMITE_SAQUES_DIARIOS:
-                return False, "Limite de saques diários atingido."
-            
-            timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-            conta["saldo"] -= valor
-            conta["extrato"] += f"[{timestamp}] Saque: R$ {valor:.2f}\n"
-            conta["saques_realizados"] += 1
-            salvar_dados()
-            return True, f"Saque de R$ {valor:.2f} realizado com sucesso!"
-    
-    return False, "Conta não encontrada."
+    """Wrapper para saque."""
+    try:
+        if valor <= 0:
+            return False, "Valor deve ser maior que zero."
+        
+        for conta in contas:
+            if conta["numero_conta"] == numero_conta:
+                # Verificar se deve resetar saques diários
+                verificar_reset_saques_diarios(conta)
+                
+                if valor > conta["saldo"]:
+                    return False, "Saldo insuficiente."
+                
+                if valor > LIMITE_SAQUE:
+                    return False, f"Limite de saque é R$ {LIMITE_SAQUE:.2f}"
+                
+                if conta["saques_realizados"] >= LIMITE_SAQUES_DIARIOS:
+                    return False, "Limite de saques diários atingido."
+                
+                timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                conta["saldo"] -= valor
+                conta["extrato"] += f"[{timestamp}] Saque: R$ {valor:.2f}\n"
+                conta["saques_realizados"] += 1
+                salvar_dados()
+                return True, f"Saque de R$ {valor:.2f} realizado com sucesso!"
+        
+        return False, "Conta não encontrada."
+    except Exception as e:
+        return False, str(e)
 
 
 def transferir(numero_origem, numero_destino, valor):
-    """Realiza transferência entre contas."""
-    if valor <= 0:
-        return False, "Valor deve ser maior que zero."
-    
-    if numero_origem == numero_destino:
-        return False, "Não é possível transferir para a mesma conta."
-    
-    conta_origem = None
-    conta_destino = None
-    
-    for conta in contas:
-        if conta["numero_conta"] == numero_origem:
-            conta_origem = conta
-        if conta["numero_conta"] == numero_destino:
-            conta_destino = conta
-    
-    if not conta_origem:
-        return False, "Conta de origem não encontrada."
-    
-    if not conta_destino:
-        return False, "Conta de destino não encontrada."
-    
-    if valor > conta_origem["saldo"]:
-        return False, "Saldo insuficiente."
-    
-    timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    conta_origem["saldo"] -= valor
-    conta_origem["extrato"] += f"[{timestamp}] Transferência enviada: R$ {valor:.2f} para Agência {conta_destino['agencia']} Conta {conta_destino['numero_conta']}\n"
-    
-    conta_destino["saldo"] += valor
-    conta_destino["extrato"] += f"[{timestamp}] Transferência recebida: R$ {valor:.2f} de Agência {conta_origem['agencia']} Conta {conta_origem['numero_conta']}\n"
-    
-    salvar_dados()
-    return True, "Transferência realizada com sucesso!"
+    """Wrapper para transferência."""
+    try:
+        if valor <= 0:
+            return False, "Valor deve ser maior que zero."
+        
+        if numero_origem == numero_destino:
+            return False, "Não é possível transferir para a mesma conta."
+        
+        conta_origem = None
+        conta_destino = None
+        
+        for conta in contas:
+            if conta["numero_conta"] == numero_origem:
+                conta_origem = conta
+            if conta["numero_conta"] == numero_destino:
+                conta_destino = conta
+        
+        if not conta_origem:
+            return False, "Conta de origem não encontrada."
+        
+        if not conta_destino:
+            return False, "Conta de destino não encontrada."
+        
+        if valor > conta_origem["saldo"]:
+            return False, "Saldo insuficiente."
+        
+        timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        conta_origem["saldo"] -= valor
+        conta_origem["extrato"] += f"[{timestamp}] Transferência enviada: R$ {valor:.2f} para Agência {conta_destino['agencia']} Conta {conta_destino['numero_conta']}\n"
+        
+        conta_destino["saldo"] += valor
+        conta_destino["extrato"] += f"[{timestamp}] Transferência recebida: R$ {valor:.2f} de Agência {conta_origem['agencia']} Conta {conta_origem['numero_conta']}\n"
+        
+        salvar_dados()
+        return True, "Transferência realizada com sucesso!"
+    except Exception as e:
+        return False, str(e)
 
 
 def obter_extrato(numero_conta):
-    """Obtém extrato de uma conta."""
+    """Wrapper para obter extrato."""
     for conta in contas:
         if conta["numero_conta"] == numero_conta:
             extrato = conta["extrato"] if conta["extrato"] else "Não foram realizadas movimentações."

@@ -1,0 +1,1 @@
+[2025-11-28 10:03:08.930] criar_conta          | Criação de Conta          | ARGS: ****, 1, lista(0 items), lista(0 items)  | OK     | 0.000s
