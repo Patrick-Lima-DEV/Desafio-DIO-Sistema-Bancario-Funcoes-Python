@@ -193,13 +193,17 @@ def obter_extrato(numero_conta):
 
 class BancoGUI:
     def __init__(self, root):
+        global usuarios, contas, proximo_numero_conta
+        
         self.root = root
         self.root.title("Sistema Bancário - Interface Gráfica")
         self.root.geometry("800x600")
         self.root.minsize(600, 500)
         self.root.configure(bg="#f0f0f0")
         
-        carregar_dados()
+        # Carregar dados do arquivo
+        usuarios, contas, proximo_numero_conta = carregar_dados()
+        
         self.criar_menu_principal()
     
     def limpar_janela(self):
