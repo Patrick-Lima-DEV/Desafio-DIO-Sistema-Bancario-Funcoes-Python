@@ -53,7 +53,7 @@ def criar_usuario(nome, cpf, data_nascimento, endereco):
             "data_criacao": datetime.now().isoformat(),
         }
         usuarios.append(usuario)
-        salvar_dados()
+        salvar_dados(usuarios, contas, proximo_numero_conta)
         return True, "Usuário criado com sucesso!"
     except Exception as e:
         return False, str(e)
@@ -82,7 +82,7 @@ def criar_conta(cpf):
         contas.append(conta)
         numero_criado = proximo_numero_conta
         proximo_numero_conta += 1
-        salvar_dados()
+        salvar_dados(usuarios, contas, proximo_numero_conta)
         return True, f"Conta criada com sucesso! Número: {numero_criado}"
     except Exception as e:
         return False, str(e)
@@ -99,7 +99,7 @@ def depositar(numero_conta, valor):
                 timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                 conta["saldo"] += valor
                 conta["extrato"] += f"[{timestamp}] Depósito: R$ {valor:.2f}\n"
-                salvar_dados()
+                salvar_dados(usuarios, contas, proximo_numero_conta)
                 return True, f"Depósito de R$ {valor:.2f} realizado com sucesso!"
         
         return False, "Conta não encontrada."
@@ -131,7 +131,7 @@ def sacar(numero_conta, valor):
                 conta["saldo"] -= valor
                 conta["extrato"] += f"[{timestamp}] Saque: R$ {valor:.2f}\n"
                 conta["saques_realizados"] += 1
-                salvar_dados()
+                salvar_dados(usuarios, contas, proximo_numero_conta)
                 return True, f"Saque de R$ {valor:.2f} realizado com sucesso!"
         
         return False, "Conta não encontrada."
@@ -173,7 +173,7 @@ def transferir(numero_origem, numero_destino, valor):
         conta_destino["saldo"] += valor
         conta_destino["extrato"] += f"[{timestamp}] Transferência recebida: R$ {valor:.2f} de Agência {conta_origem['agencia']} Conta {conta_origem['numero_conta']}\n"
         
-        salvar_dados()
+        salvar_dados(usuarios, contas, proximo_numero_conta)
         return True, "Transferência realizada com sucesso!"
     except Exception as e:
         return False, str(e)
