@@ -1,3 +1,0 @@
-[2025-11-28 10:59:43.190] consulta_extrato      | Consulta de Extrato      | conta=1 titular=João Silva | OK     | 0.000s
-[2025-11-28 10:59:43.190] consulta_extrato      | Consulta de Extrato      | conta=2 titular=Maria Santos | OK     | 0.000s
-[2025-11-28 10:59:43.191] consulta_extrato      | Consulta de Extrato      | conta=1 titular=João Silva | OK     | 0.000s
